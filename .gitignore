@@ -1,0 +1,11 @@
+nbproject
+bin
+pkg
+*.sublime*
+.*.swp
+*_pb2.py
+*.pyc
+*.pb.go
+
+SuperMakefile
+goprotobuf.patch
