@@ -53,14 +53,14 @@ type OAuthToken struct {
 
 func (o *OAuthToken) Id() string { return o.Key }
 
-//GAEBackendStore implements the oauthprovider BackendStore interface, and add some specific checker
-type GAEBackendStore struct {
+//BackendStore implements the oauthprovider BackendStore interface, and add some specific checker
+type BackendStore struct {
 	r *http.Request
 	appengine.Context
 }
 
-func NewGAEBackendStore(r *http.Request) *GAEBackendStore {
-	return &GAEBackendStore{r, appengine.NewContext(r)}
+func NewBackendStore(r *http.Request) *BackendStore {
+	return &BackendStore{r, appengine.NewContext(r)}
 }
 
 //Entity Management methods
@@ -68,7 +68,7 @@ func NewGAEBackendStore(r *http.Request) *GAEBackendStore {
 //#################################################################################################
 
 //Put
-func (s *GAEBackendStore) PutOAuthConsumer(u *OAuthConsumer) (err error) {
+func (s *BackendStore) PutOAuthConsumer(u *OAuthConsumer) (err error) {
 	c := s.Context
 	name := OAuthConsumer_Table
 	id := u.Id()
@@ -77,7 +77,7 @@ func (s *GAEBackendStore) PutOAuthConsumer(u *OAuthConsumer) (err error) {
 	return
 }
 
-func (s *GAEBackendStore) GetOAuthConsumer(id string) (u *OAuthConsumer, err error) {
+func (s *BackendStore) GetOAuthConsumer(id string) (u *OAuthConsumer, err error) {
 	c := s.Context
 	u = &OAuthConsumer{}
 	cname := OAuthConsumer_Table
@@ -85,7 +85,7 @@ func (s *GAEBackendStore) GetOAuthConsumer(id string) (u *OAuthConsumer, err err
 	return
 }
 
-func (s *GAEBackendStore) PutOAuthNonce(u *OAuthNonce) (err error) {
+func (s *BackendStore) PutOAuthNonce(u *OAuthNonce) (err error) {
 	c := s.Context
 	name := OAuthNonce_Table
 	id := oauthNonceId(u.ConsumerKey, u.TokenKey, u.Nonce)
@@ -94,7 +94,7 @@ func (s *GAEBackendStore) PutOAuthNonce(u *OAuthNonce) (err error) {
 	return
 }
 
-func (s *GAEBackendStore) GetOAuthNonce(consumerKey, tokenKey, nonce string) (u *OAuthNonce, err error) {
+func (s *BackendStore) GetOAuthNonce(consumerKey, tokenKey, nonce string) (u *OAuthNonce, err error) {
 	c := s.Context
 	u = &OAuthNonce{}
 	cname := OAuthNonce_Table
@@ -103,7 +103,7 @@ func (s *GAEBackendStore) GetOAuthNonce(consumerKey, tokenKey, nonce string) (u 
 	return
 }
 
-func (s *GAEBackendStore) PutOAuthToken(u *OAuthToken) (err error) {
+func (s *BackendStore) PutOAuthToken(u *OAuthToken) (err error) {
 	c := s.Context
 	name := OAuthToken_Table
 	id := u.Id()
@@ -112,7 +112,7 @@ func (s *GAEBackendStore) PutOAuthToken(u *OAuthToken) (err error) {
 	return
 }
 
-func (s *GAEBackendStore) GetOAuthToken(tokenKey string) (u *OAuthToken, err error) {
+func (s *BackendStore) GetOAuthToken(tokenKey string) (u *OAuthToken, err error) {
 	c := s.Context
 	u = &OAuthToken{}
 	cname := OAuthToken_Table
@@ -120,7 +120,7 @@ func (s *GAEBackendStore) GetOAuthToken(tokenKey string) (u *OAuthToken, err err
 	err = datastore.Get(c, datastore.NewKey(c, cname, id, 0, nil), u)
 	return
 }
-func (s *GAEBackendStore) DelOAuthToken(tokenKey string) (err error) {
+func (s *BackendStore) DelOAuthToken(tokenKey string) (err error) {
 	c := s.Context
 	cname := OAuthToken_Table
 	id := tokenKey
@@ -128,7 +128,7 @@ func (s *GAEBackendStore) DelOAuthToken(tokenKey string) (err error) {
 	return
 }
 
-func (s *GAEBackendStore) Blobstore(content string) (key string, err error) {
+func (s *BackendStore) Blobstore(content string) (key string, err error) {
 	writer, err := blobstore.Create(s.Context, "text/plain")
 	if err != nil {
 		return "", err
@@ -144,7 +144,7 @@ func (s *GAEBackendStore) Blobstore(content string) (key string, err error) {
 	k, err := writer.Key()
 	return string(k), err
 }
-func (s *GAEBackendStore) Blobget(key string) (content string, err error) {
+func (s *BackendStore) Blobget(key string) (content string, err error) {
 
 	reader := blobstore.NewReader(s.Context, appengine.BlobKey(key))
 	c, err := ioutil.ReadAll(reader)
@@ -158,7 +158,7 @@ func (s *GAEBackendStore) Blobget(key string) (content string, err error) {
 //#################################################################################################
 //#################################################################################################
 
-func (f *GAEBackendStore) ConsumerSecret(consumer_key string) (secret string, err error) {
+func (f *BackendStore) ConsumerSecret(consumer_key string) (secret string, err error) {
 	consumer, err := f.GetOAuthConsumer(consumer_key)
 	if err != nil {
 		f.Errorf("Unknown Consumer Key: %v", err)
@@ -172,7 +172,7 @@ func (f *GAEBackendStore) ConsumerSecret(consumer_key string) (secret string, er
 	return content, nil
 }
 
-func (f *GAEBackendStore) TokenSecret(token_key string) (secret string, err error) {
+func (f *BackendStore) TokenSecret(token_key string) (secret string, err error) {
 	tok, err := f.GetOAuthToken(token_key)
 	if err != nil {
 		return
@@ -181,7 +181,7 @@ func (f *GAEBackendStore) TokenSecret(token_key string) (secret string, err erro
 	return
 }
 
-func (f *GAEBackendStore) Uniqueness(nonce, consumer_key, token_key string) bool {
+func (f *BackendStore) Uniqueness(nonce, consumer_key, token_key string) bool {
 	_, err := f.GetOAuthNonce(consumer_key, token_key, nonce)
 	if err == nil {
 		return false
@@ -201,7 +201,7 @@ func (f *GAEBackendStore) Uniqueness(nonce, consumer_key, token_key string) bool
 	panic("unreachable statement")
 }
 
-func (f *GAEBackendStore) ValidateToken(token, consumer_key string) bool {
+func (f *BackendStore) ValidateToken(token, consumer_key string) bool {
 	t, err := f.GetOAuthToken(token)
 	if err != nil {
 		f.Context.Debugf("Unknown token %v (err= %v)", token, err)
@@ -222,7 +222,7 @@ func uuidgen() string {
 	return fmt.Sprintf("%x-%x-%x-%x-%x", uuid[0:4], uuid[4:6], uuid[6:8], uuid[8:10], uuid[10:])
 }
 
-func (f *GAEBackendStore) CreateTemporaryCredentials(consumer_key, callback string) (token_key, token_secret string) {
+func (f *BackendStore) CreateTemporaryCredentials(consumer_key, callback string) (token_key, token_secret string) {
 	tok := &OAuthToken{
 		Key:         uuidgen(),
 		ConsumerKey: consumer_key,
@@ -236,7 +236,7 @@ func (f *GAEBackendStore) CreateTemporaryCredentials(consumer_key, callback stri
 	f.PutOAuthToken(tok)
 	return tok.Key, tok.Secret
 }
-func (f *GAEBackendStore) CreateCredentials(consumer_key, request_token, verifier string) (token_key, token_secret string) {
+func (f *BackendStore) CreateCredentials(consumer_key, request_token, verifier string) (token_key, token_secret string) {
 	req, err := f.GetOAuthToken(request_token)
 	if err != nil || req.UserID == "" || verifier != req.Verifier { // no user have been associated, marking the accceptation
 		return "", "" // better have an err returned

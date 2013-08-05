@@ -85,7 +85,7 @@ func (*OAuthServer) pruneObsolete(w http.ResponseWriter, r *http.Request, kind s
 //Receive HandlerFunc that s
 func (*OAuthServer) serveTemporaryCredentialRequest(w http.ResponseWriter, r *http.Request) {
 
-	f := NewGAEBackendStore(r)
+	f := NewBackendStore(r)
 
 	// 
 	ur := oauthprovider.ParsingRequest(r, f)
@@ -104,7 +104,7 @@ func (*OAuthServer) serveTemporaryCredentialRequest(w http.ResponseWriter, r *ht
 	oauthprovider.NewEndPoints(f).TemporaryCredentialRequest(w, r)
 }
 func (*OAuthServer) serveTokenCredentials(w http.ResponseWriter, r *http.Request) {
-	f := NewGAEBackendStore(r)
+	f := NewBackendStore(r)
 	oauthprovider.NewEndPoints(f).TokenCredentials(w, r)
 
 }
@@ -113,7 +113,7 @@ func (*OAuthServer) serveTokenCredentials(w http.ResponseWriter, r *http.Request
 func (s *OAuthServer) serveResourceOwnerAuthorize(w http.ResponseWriter, r *http.Request) {
 	//make it signin required in app.yaml
 	c := appengine.NewContext(r)
-	f := NewGAEBackendStore(r)
+	f := NewBackendStore(r)
 	u := user.Current(c)
 	if u == nil {
 		login, err := user.LoginURL(c, r.URL.String())
@@ -149,7 +149,7 @@ func (s *OAuthServer) serveResourceOwnerAuthorize(w http.ResponseWriter, r *http
 func (s *OAuthServer) serveResourceOwnerAuthorized(w http.ResponseWriter, r *http.Request) {
 	//this should be called to get the acceptation
 	c := appengine.NewContext(r)
-	f := NewGAEBackendStore(r)
+	f := NewBackendStore(r)
 	u := user.Current(c)
 	if u == nil {
 		http.Error(w, "Login Required to access this page", http.StatusUnauthorized)

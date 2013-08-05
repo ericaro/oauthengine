@@ -19,7 +19,7 @@ import (
 
 //CheckOAuthAccessToken assert that "r" is a valid token, a valid access token one. Return err otherwise.
 func CheckOAuthAccessToken(r *http.Request) (err error) {
-	f := NewGAEBackendStore(r)
+	f := NewBackendStore(r)
 	req, err := oauthprovider.NewAuthenticatedRequest(r, f)
 	if err != nil {
 		return
@@ -38,7 +38,7 @@ func CheckOAuthAccessToken(r *http.Request) (err error) {
 
 //CurrentUserId extract from the given request the current user ID. 
 func CurrentUserId(r *http.Request) (id string) {
-	f := NewGAEBackendStore(r)
+	f := NewBackendStore(r)
 	req, err := oauthprovider.NewAuthenticatedRequest(f.r, f)
 	if err != nil {
 		return
